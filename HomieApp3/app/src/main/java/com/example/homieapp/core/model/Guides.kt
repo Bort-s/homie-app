@@ -1,6 +1,4 @@
-package com.example.homieapp.model
-
-import android.graphics.Color
+package com.example.homieapp.core.model
 
 data class Guides(
     val title: String,

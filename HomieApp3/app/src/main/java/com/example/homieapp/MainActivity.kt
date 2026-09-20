@@ -98,10 +98,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.homieapp.bluetooth.BTManager
-import com.example.homieapp.model.Block
-import com.example.homieapp.ui.theme.HomieAppTheme
-import com.example.homieapp.viewmodels.GuidesViewModel
+import com.example.homieapp.core.ble.BTManager
+import com.example.homieapp.core.model.Block
+import com.example.homieapp.core.ui.theme.HomieAppTheme
+import com.example.homieapp.features.guides.GuidesViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 

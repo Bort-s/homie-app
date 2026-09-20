@@ -1,10 +1,8 @@
-package com.example.homieapp.viewmodels
+package com.example.homieapp.features.guides
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
-import com.example.homieapp.R
-import com.example.homieapp.model.Block
-import com.example.homieapp.model.Guides
+import com.example.homieapp.core.model.Block
+import com.example.homieapp.core.model.Guides
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

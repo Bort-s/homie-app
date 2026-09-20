@@ -1,4 +1,4 @@
-package com.example.homieapp.bluetooth
+package com.example.homieapp.core.ble
 
 import android.Manifest
 import android.bluetooth.BluetoothGatt
@@ -12,7 +12,6 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import java.util.UUID
 
@@ -23,8 +22,6 @@ class BTManager(
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val adapter = bluetoothManager.adapter
     private var bluetoothGatt: BluetoothGatt? = null
-
-    // UUIDs from your main.cpp
     private val SERVICE_UUID = UUID.fromString("12345678-1234-1234-1234-1234567890ab")
     private val TX_CHAR_UUID = UUID.fromString("12345678-1234-1234-1234-1234567890ac")
 
