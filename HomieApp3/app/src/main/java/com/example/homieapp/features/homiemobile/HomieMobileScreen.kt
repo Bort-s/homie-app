@@ -34,12 +34,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.homieapp.MeasureCard
-import com.example.homieapp.PrincipalText
 import com.example.homieapp.R
-import com.example.homieapp.SecondaryText
 import com.example.homieapp.advice
 import com.example.homieapp.core.model.HomieMobile
+import com.example.homieapp.core.ui.components.PrincipalText
+import com.example.homieapp.core.ui.components.SecondaryText
 import com.example.homieapp.core.ui.theme.HomieAppTheme
 import com.example.homieapp.domeState
 
@@ -87,25 +86,21 @@ fun HomieMobileScreen(homieMobile: HomieMobile, onNavigateToDevice: () -> Unit, 
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
                     MeasureCard(
-                        homieMobile.temperatureHistory,
-                        homieMobile.colorTemperature,
                         "Temperatura",
+                        homieMobile.temperatureColor,
                         R.drawable.device_thermostat,
                         "°C"
                     )
                     MeasureCard(
-                        homieMobile.humidityHistory,
-                        homieMobile.colorHumidity,
                         "Humedad",
+                        homieMobile.humidityColor,
                         R.drawable.water_drop,
                         "%"
                     )
                     MeasureCard(
-                        homieMobile.aqiHistory,
-                        homieMobile.colorAQ,
                         "AQI",
+                        homieMobile.aqiColor,
                         R.drawable.air,
-                        ""
                     )
                 }
                 item {
@@ -148,8 +143,17 @@ fun HomieMobileScreen(homieMobile: HomieMobile, onNavigateToDevice: () -> Unit, 
 @Composable
 fun HomieMobilePreview() {
     HomieAppTheme {
+        val homieMobile = HomieMobile(
+            30,
+            45,
+            aqi = 67,
+            id = "000000",
+            name = "Homie Mobile",
+            register = false,
+            connected = true
+        )
         HomieMobileScreen(
-            HomieMobile(),
+            homieMobile,
             onNavigateToDevice = {},
             onNavigateToGuide = {}
         )

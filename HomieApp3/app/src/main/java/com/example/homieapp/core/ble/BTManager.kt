@@ -1,143 +1,91 @@
 package com.example.homieapp.core.ble
 
-import android.Manifest
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
-class BTManager(
-    private val context: Context,
-    private val onDataReceived: (String, String, Int) -> Unit
-) {
-    private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    private val adapter = bluetoothManager.adapter
+@SuppressLint("MissingPermission")
+class BTManager(private val context: Context) {
+
+    private val bluetoothManager: BluetoothManager =
+        context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    private val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
+    private val bleScanner = bluetoothAdapter?.bluetoothLeScanner
+
+    private val _foundDevices = MutableStateFlow<List<BluetoothDevice>>(emptyList())
+    val foundDevices: StateFlow<List<BluetoothDevice>> = _foundDevices
+
+    private val _receivedData = MutableStateFlow<String>("")
+    val receivedData: StateFlow<String> = _receivedData
+
     private var bluetoothGatt: BluetoothGatt? = null
-    private val SERVICE_UUID = UUID.fromString("12345678-1234-1234-1234-1234567890ab")
-    private val TX_CHAR_UUID = UUID.fromString("12345678-1234-1234-1234-1234567890ac")
+
+    private val UART_SERVICE_UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+    private val TX_CHARACTERISTIC_UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-            // CHECK: Connect permission needed to read the device name
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Log.e("BT_LOG", "Cannot read device name: BLUETOOTH_CONNECT permission rejected.")
-                return
-            }
-
-            val deviceName = result.device.name
-            Log.d("BT_LOG", "Found device: ${deviceName ?: "Unknown"}")
-
-            if (deviceName == "HMMB000001") {
-                Log.i("BT_LOG", "Target found! Stopping scan and connecting...")
-
-                try {
-                    // STOP SCAN: Requires BLUETOOTH_SCAN
-                    adapter?.bluetoothLeScanner?.stopScan(this)
-                    // CONNECT: Requires BLUETOOTH_CONNECT
-                    bluetoothGatt = result.device.connectGatt(context, false, gattCallback)
-                } catch (e: SecurityException) {
-                    Log.e("BT_LOG", "SecurityException: Permission lost during operation. ${e.message}")
+            val device = result.device
+            val name = device.name ?: return
+            if (name.startsWith("HMMB") && name.length == 10) {
+                val currentList = _foundDevices.value
+                if (currentList.none { it.address == device.address }) {
+                    _foundDevices.value = currentList + device
                 }
             }
         }
-
-        override fun onScanFailed(errorCode: Int) {
-            Log.e("BT_LOG", "Scan failed with error code: $errorCode")
-        }
     }
 
-    fun startScanning() {
-        if (adapter == null) {
-            Log.e("BT_LOG", "Bluetooth not supported on this device.")
-            return
-        }
+    fun startScan() {
+        _foundDevices.value = emptyList()
+        bleScanner?.startScan(scanCallback)
+    }
 
-        if (!adapter.isEnabled) {
-            Log.e("BT_LOG", "Bluetooth is disabled.")
-            return
-        }
+    fun stopScan() {
+        bleScanner?.stopScan(scanCallback)
+    }
 
-        val scanner = adapter.bluetoothLeScanner
-        if (scanner == null) {
-            Log.e("BT_LOG", "Bluetooth LE Scanner not available.")
-            return
-        }
-
-        val hasScan = ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
-        val hasConnect = ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-
-        if (hasScan && hasConnect) {
-            Log.i("BT_LOG", "Permissions verified. Starting scan...")
-            try {
-                scanner.startScan(scanCallback)
-            } catch (e: SecurityException) {
-                Log.e("BT_LOG", "SecurityException starting scan: ${e.message}")
-            }
-        } else {
-            Log.e("BT_LOG", "ABORT: Permissions missing. Scan: $hasScan, Connect: $hasConnect")
-        }
+    fun connectToDevice(device: BluetoothDevice) {
+        stopScan()
+        bluetoothGatt = device.connectGatt(context, false, gattCallback)
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.i("BT_LOG", "Connected to GATT. Discovering services...")
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        gatt.discoverServices()
-                    } catch (e: SecurityException) {
-                        Log.e("BT_LOG", "SecurityException discovering services: ${e.message}")
-                    }
-                }
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.w("BT_LOG", "Disconnected from ESP32.")
+                gatt.discoverServices()
             }
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                val service = gatt.getService(SERVICE_UUID)
-                val characteristic = service?.getCharacteristic(TX_CHAR_UUID)
-
-                if (characteristic != null && ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        gatt.setCharacteristicNotification(characteristic, true)
-
-                        val descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
-                        if (descriptor != null) {
-                            descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                            gatt.writeDescriptor(descriptor)
-                        }
-
-                        Log.d("BT_LOG", "Notifications enabled for $TX_CHAR_UUID")
-                    } catch (e: SecurityException) {
-                        Log.e("BT_LOG", "SecurityException enabling notifications: ${e.message}")
-                    }
+                val service = gatt.getService(UART_SERVICE_UUID)
+                val characteristic = service?.getCharacteristic(TX_CHARACTERISTIC_UUID)
+                if (characteristic != null) {
+                    gatt.setCharacteristicNotification(characteristic, true)
                 }
             }
         }
 
-        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-            val rawData = String(characteristic.value)
-            Log.v("BT_LOG", "RAW DATA: $rawData")
-
-            val parts = rawData.split(":")
-            if (parts.size == 2) {
-                val deviceName = if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                    try { gatt.device.name } catch (e: SecurityException) { "Unknown" }
-                } else {
-                    "Unknown"
-                }
-                onDataReceived(deviceName ?: "Unknown", parts[0], parts[1].toIntOrNull() ?: 0)
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic
+        ) {
+            val data = characteristic.getStringValue(0)
+            if (data != null) {
+                _receivedData.value = data
             }
         }
     }

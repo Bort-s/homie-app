@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="facts">
+        <item>A miles de kilómetros de distancia, el viento levanta cada año toneladas de polvo rico en fósforo y nutrientes en el desierto del Sahara y lo transporta a través del Océano Atlántico. Este "polvo volador" cae sobre la selva amazónica y funciona como un fertilizante natural masivo que mantiene vivo a uno de los ecosistemas más diversos del planeta.</item>
+        <item>Las ardillas entierran miles de semillas y nueces cada año para prepararse para el invierno, pero olvidan la ubicación exacta de aproximadamente el 74% de ellas. Gracias a su mala memoria, replantan accidentalmente millones de árboles en los bosques del mundo cada año.</item>
+        <item>El excremento de las ballenas contiene enormes cantidades de hierro y nitrógeno, nutrientes esenciales para el fitoplancton Marino. Este plancton produce más del 50% del oxígeno del planeta y absorbe toneladas de dióxido de carbono. Cuantas más ballenas hay en el océano, más saludable y lleno de oxígeno está el aire que respiras.</item>
+        <item>En el suelo de los bosques existe el micelio, una red de hongos subterráneos conocida por los científicos como Wood Wide Web. A través de esta red, los árboles pueden comunicarse entre sí, compartir nutrientes con ejemplares enfermos y enviarse señales de advertencia si detectan plagas o sequías.</item>
+        <item>A diferencia del plástico, el aluminio se puede reciclar de forma indefinida sin perder nada de calidad ni pureza. De hecho, casi el 75% de todo el aluminio que se ha producido en la historia de la humanidad sigue en uso hoy en día. Reciclar una sola lata ahorra suficiente energía para mantener encendida una televisión durante tres horas.</item>
+        <item>Demostrando que la humanidad sí puede ponerse de acuerdo para solucionar grandes problemas, el Protocolo de Montreal de 1987 prohibió los químicos que destruían la capa de ozono (los CFCs). Hoy en día, la capa de ozono se está regenerando de forma constante y la ONU estima que se habrá recuperado por completo en las próximas décadas.</item>
+        <item>Las represas que construyen los castores alteran los cauces de agua creando humedales. Estas zonas no solo aumentan enormemente la biodiversidad local, sino que actúan como "esponjas" de humedad que detienen la propagación de incendios forestales y mantienen el agua limpia filtrando sedimentos.</item>
+    </string-array>
+</resources>

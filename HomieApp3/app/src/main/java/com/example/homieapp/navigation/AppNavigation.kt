@@ -1,5 +1,6 @@
 package com.example.homieapp.navigation
 
+import android.bluetooth.BluetoothDevice
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.getValue
@@ -24,7 +25,10 @@ import com.example.homieapp.navigation.AppRoutes.HomieMobileRoute
 @Composable
 fun AppNavigation(
     homieMobile: HomieMobile,
-    onRegisterDevice: (String) -> Unit,
+    foundDevices: List<BluetoothDevice>,
+    onStartScan: () -> Unit,
+    onStopScan: () -> Unit,
+    onConnectDevice: (BluetoothDevice) -> Unit,
     backStack: SnapshotStateList<AppRoutes>
 ) {
     var guidePage by rememberSaveable { mutableIntStateOf(0) }
@@ -49,10 +53,13 @@ fun AppNavigation(
             entry<DevicesRoute> {
                 DevicePreviewScreen(
                     homieMobile = homieMobile,
+                    foundDevices = foundDevices,
+                    onStartScan = onStartScan,
+                    onStopScan = onStopScan,
+                    onConnectDevice = onConnectDevice,
                     onNavigateToHomieMobile = {
                         backStack.add(HomieMobileRoute)
-                    },
-                    onRegisterDevice = onRegisterDevice
+                    }
                 )
             }
 
@@ -69,7 +76,7 @@ fun AppNavigation(
             }
 
             entry<AlertsRoute> {
-                AlertsScreen(homieMobile = homieMobile)
+                AlertsScreen()
             }
 
             entry<GuideRoute> {
@@ -79,8 +86,6 @@ fun AppNavigation(
                         if (backStack.size > 1) {
                             backStack.removeAt(backStack.lastIndex)
                         } else {
-                            // If we were at Home already, this shouldn't happen usually with nav3 back handling
-                            // but ensuring we have a home.
                             if (backStack.none { it is HomeRoute }) {
                                 backStack.add(0, HomeRoute)
                             }

@@ -39,26 +39,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.homieapp.InfoModalBottomSheet
-import com.example.homieapp.PrincipalText
 import com.example.homieapp.R
-import com.example.homieapp.SecondaryText
 import com.example.homieapp.core.model.HomieMobile
+import com.example.homieapp.core.ui.components.PrincipalText
+import com.example.homieapp.core.ui.components.SecondaryText
 import com.example.homieapp.core.ui.theme.HomieAppTheme
-import com.example.homieapp.facts
-import com.example.homieapp.getState
+import java.time.LocalDate
 
 @Composable
 fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
     var expandedInfo by remember { mutableStateOf(false) }
     var showSheet by remember { mutableStateOf(false) }
 
-    val percentage: Float = ((500 - (homieMobile.aqi).toFloat().coerceIn(0f, 500f)) / 500)
+    val facts = stringArrayResource(id = R.array.facts)
+    val day = LocalDate.now().dayOfWeek.value - 1
+
+    val aqiPercentage: Float = ((500 - (homieMobile.aqi).toFloat().coerceIn(0f, 500f)) / 500)
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
@@ -67,7 +70,6 @@ fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                 .fillMaxSize()
         ) {
-            // Header
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .height(80.dp)
@@ -133,13 +135,13 @@ fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
                                     modifier = Modifier
                                         .size(64.dp)
                                         .clip(CircleShape)
-                                        .background(homieMobile.colorTemperature.copy(alpha = 0.1f)),
+                                        .background(homieMobile.temperatureColor.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = ImageVector.vectorResource(id = R.drawable.device_thermostat),
                                         contentDescription = "Termostato",
-                                        tint = homieMobile.colorTemperature,
+                                        tint = homieMobile.temperatureColor,
                                         modifier = Modifier.size(32.dp)
                                     )
                                 }
@@ -160,13 +162,13 @@ fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
                                     modifier = Modifier
                                         .size(64.dp)
                                         .clip(CircleShape)
-                                        .background(homieMobile.colorHumidity.copy(alpha = 0.1f)),
+                                        .background(homieMobile.humidityColor.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = ImageVector.vectorResource(id = R.drawable.water_drop),
                                         contentDescription = "Humedad",
-                                        tint = homieMobile.colorHumidity,
+                                        tint = homieMobile.humidityColor,
                                         modifier = Modifier.size(32.dp)
                                     )
                                 }
@@ -186,13 +188,13 @@ fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
                                 modifier = Modifier
                                     .size(64.dp)
                                     .clip(CircleShape)
-                                    .background(homieMobile.colorAQ.copy(alpha = 0.1f)),
+                                    .background(homieMobile.aqiColor.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = ImageVector.vectorResource(id = R.drawable.air),
                                     contentDescription = "Aire",
-                                    tint = homieMobile.colorAQ,
+                                    tint = homieMobile.aqiColor,
                                     modifier = Modifier.size(32.dp)
                                 )
                             }
@@ -214,9 +216,9 @@ fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxHeight()
-                                        .fillMaxWidth(percentage)
+                                        .fillMaxWidth(aqiPercentage)
                                         .clip(CircleShape)
-                                        .background(homieMobile.colorAQ)
+                                        .background(homieMobile.aqiColor)
                                 )
                             }
                         }
@@ -271,7 +273,8 @@ fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
                             )
                             PrincipalText("Dato ambiental del dia", 24)
                         }
-                        SecondaryText(facts[1], 16, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                        val fact = facts.getOrElse(day) { "Consejo no disponible" }
+                        SecondaryText(fact, 16, modifier = Modifier.padding(start = 16.dp, end = 16.dp))
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -285,16 +288,14 @@ fun HomeScreen(homieMobile: HomieMobile, onNavigateToGuide: () -> Unit) {
 fun HomeScreenPreview() {
     HomieAppTheme {
         val homieMobile = HomieMobile(
-            25,
+            30,
             45,
             aqi = 67,
-            state = 0,
             id = "000000",
             name = "Homie Mobile",
             register = false,
             connected = true
         )
-        homieMobile.state = getState(homieMobile.temperature, homieMobile.humidity, homieMobile.aqi)
         HomeScreen(homieMobile, onNavigateToGuide = {})
     }
 }

@@ -61,7 +61,6 @@ fun GuideScreen(guidePage: Int, onNavigateToHome: () -> Unit, addPage: () -> Uni
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                 .fillMaxSize()
         ) {
-            // Header
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)) {
